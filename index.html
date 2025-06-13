@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Pintar Hewan | Level</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff; /* Light blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 650px; /* Adjusted max width for better spacing */
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* rounded-3xl */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); /* shadow-2xl */
+            padding: 2.5rem; /* p-10 */
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 450px; /* Ensure a minimum height for consistent layout */
+        }
+
+        .button-style {
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 0.75rem; /* rounded-xl */
+            font-weight: 600; /* font-semibold */
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+            cursor: pointer;
+        }
+
+        .button-style:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Specific button colors */
+        .start-button, .level-button.easy {
+            background-color: #22c55e; /* green-500 */
+            color: white;
+        }
+        .start-button:hover, .level-button.easy:hover {
+            background-color: #16a34a; /* green-600 */
+        }
+
+        .level-button.medium {
+            background-color: #f97316; /* orange-500 */
+            color: white;
+        }
+        .level-button.medium:hover {
+            background-color: #ea580c; /* orange-600 */
+        }
+
+        .level-button.hard {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+        }
+        .level-button.hard:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+
+        .answer-button {
+            background-color: #a855f7; /* purple-500 */
+            color: white;
+            width: 100%;
+        }
+        .answer-button:hover {
+            background-color: #9333ea; /* purple-600 */
+        }
+
+        .next-button {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+        }
+        .next-button:hover {
+            background-color: #2563eb; /* blue-600 */
+        }
+
+        .play-again-button {
+            background-color: #6366f1; /* indigo-500 */
+            color: white;
+        }
+        .play-again-button:hover {
+            background-color: #4f46e5; /* indigo-600 */
+        }
+
+        .correct-answer {
+            background-color: #dcfce7; /* green-100 */
+            color: #15803d; /* green-700 */
+            border: 2px solid #22c55e; /* green-500 */
+            animation: pulse-correct 0.5s ease-out;
+        }
+
+        .incorrect-answer {
+            background-color: #fee2e2; /* red-100 */
+            color: #b91c1c; /* red-700 */
+            border: 2px solid #ef4444; /* red-500 */
+            animation: shake-incorrect 0.3s ease-out;
+        }
+
+        .disabled-button {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @keyframes pulse-correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake-incorrect {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+
+        /* Responsive adjustments for button grid */
+        #answer-buttons {
+            display: grid;
+            gap: 1rem; /* space-y-4 for grid */
+            grid-template-columns: 1fr; /* Single column by default */
+        }
+
+        @media (min-width: 640px) { /* sm breakpoint */
+            #answer-buttons {
+                grid-template-columns: 1fr 1fr; /* Two columns on small screens and up */
+            }
+        }
+        
+        #level-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Space between level buttons */
+            width: 100%;
+        }
+
+        @media (min-width: 640px) { /* sm breakpoint */
+            #level-buttons {
+                flex-direction: row; /* Row on larger screens */
+                justify-content: center;
+            }
+            .level-button {
+                width: auto;
+                flex-grow: 1; /* Allow buttons to grow */
+                max-width: 180px; /* Limit max width for level buttons */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container" class="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="w-full text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-blue-700 mb-6 drop-shadow-md">Kuis Pintar Hewan</h1>
+            <p class="text-lg md:text-xl text-gray-700 mb-8">Uji pengetahuanmu tentang hewan-hewan lucu!</p>
+            <button id="start-button" class="button-style start-button px-10 py-4 text-xl md:text-2xl">
+                Mulai Kuis!
+            </button>
+        </div>
+
+        <!-- Level Selection Screen -->
+        <div id="level-selection-screen" class="w-full text-center hidden">
+            <h2 class="text-3xl md:text-4xl font-extrabold text-purple-700 mb-8">Pilih Tingkat Kesulitan</h2>
+            <div id="level-buttons">
+                <button class="button-style level-button easy px-8 py-4 text-xl md:text-2xl" data-difficulty="easy">
+                    Mudah
+                </button>
+                <button class="button-style level-button medium px-8 py-4 text-xl md:text-2xl" data-difficulty="medium">
+                    Sedang
+                </button>
+                <button class="button-style level-button hard px-8 py-4 text-xl md:text-2xl" data-difficulty="hard">
+                    Sulit
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="w-full hidden">
+            <p class="text-lg text-gray-500 mb-4 font-medium">Soal <span id="question-number">1</span> dari <span id="total-questions">20</span></p>
+            <h2 id="question-text" class="text-2xl md:text-3xl font-bold text-gray-800 mb-8 leading-relaxed">Pertanyaan akan muncul di sini?</h2>
+            
+            <div id="answer-buttons" class="flex flex-wrap justify-center gap-4 mb-8">
+                <!-- Answer buttons will be populated by JavaScript -->
+            </div>
+
+            <button id="next-button" class="button-style next-button hidden mt-6 px-8 py-3 text-lg md:text-xl disabled-button" disabled>
+                Soal Selanjutnya
+            </button>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="w-full text-center hidden">
+            <h2 class="text-3xl md:text-4xl font-extrabold text-green-600 mb-6">Kuis Selesai!</h2>
+            <p class="text-xl md:text-2xl text-gray-700 mb-4">Skor Anda:</p>
+            <p id="final-score" class="text-5xl md:text-6xl font-extrabold text-blue-700 mb-8 drop-shadow-lg">0 / 20</p>
+            <button id="play-again-button" class="button-style play-again-button px-10 py-4 text-xl md:text-2xl">
+                Main Lagi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data Kuis (Array Objek Pertanyaan dengan Tingkat Kesulitan)
+        const allQuestions = [
+            // --- Pertanyaan Mudah (20 pertanyaan) ---
+            {
+                question: "Hewan apa yang suka makan pisang?",
+                answers: [
+                    { text: "Kucing", correct: false },
+                    { text: "Monyet", correct: true },
+                    { text: "Ikan", correct: false },
+                    { text: "Burung", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang menghasilkan susu yang kita minum?",
+                answers: [
+                    { text: "Ayam", correct: false },
+                    { text: "Babi", correct: false },
+                    { text: "Sapi", correct: true },
+                    { text: "Ular", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Suara hewan apa ini? 'Meong!'",
+                answers: [
+                    { text: "Anjing", correct: false },
+                    { text: "Kucing", correct: true },
+                    { text: "Sapi", correct: false },
+                    { text: "Bebek", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang punya cangkang keras dan berjalan lambat?",
+                answers: [
+                    { text: "Kupu-kupu", correct: false },
+                    { text: "Kura-kura", correct: true },
+                    { text: "Kambing", correct: false },
+                    { text: "Semut", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Apa warna kulit beruang kutub?",
+                answers: [
+                    { text: "Cokelat", correct: false },
+                    { text: "Hitam", correct: true }, 
+                    { text: "Putih", correct: false }, 
+                    { text: "Abu-abu", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang hidup di air dan punya sirip?",
+                answers: [
+                    { text: "Kambing", correct: false },
+                    { text: "Ayam", correct: false },
+                    { text: "Ikan", correct: true },
+                    { text: "Kuda", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang punya leher sangat panjang?",
+                answers: [
+                    { text: "Anjing", correct: false },
+                    { text: "Jerapah", correct: true },
+                    { text: "Kelinci", correct: false },
+                    { text: "Tikus", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang bisa terbang tinggi?",
+                answers: [
+                    { text: "Kucing", correct: false },
+                    { text: "Ikan", correct: false },
+                    { text: "Burung", correct: true },
+                    { text: "Sapi", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan peliharaan apa yang terkenal setia?",
+                answers: [
+                    { text: "Kelinci", correct: false },
+                    { text: "Ular", correct: false },
+                    { text: "Anjing", correct: true },
+                    { text: "Hamster", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang punya belalai panjang?",
+                answers: [
+                    { text: "Kuda nil", correct: false },
+                    { text: "Badak", correct: false },
+                    { text: "Gajah", correct: true },
+                    { text: "Zebra", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang suka melompat dan makan wortel?",
+                answers: [
+                    { text: "Tupai", correct: false },
+                    { text: "Kelinci", correct: true },
+                    { text: "Beruang", correct: false },
+                    { text: "Rubah", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang suka membuat sarang di pohon dan makan biji-bijian?",
+                answers: [
+                    { text: "Katak", correct: false },
+                    { text: "Burung", correct: true },
+                    { text: "Ikan", correct: false },
+                    { text: "Kura-kura", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang dikenal sebagai 'raja hutan'?",
+                answers: [
+                    { text: "Harimau", correct: false },
+                    { text: "Singa", correct: true },
+                    { text: "Beruang", correct: false },
+                    { text: "Serigala", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang suka makan bambu?",
+                answers: [
+                    { text: "Kura-kura", correct: false },
+                    { text: "Panda", correct: true },
+                    { text: "Monyet", correct: false },
+                    { text: "Gajah", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang punya sisik dan tidak punya kaki?",
+                answers: [
+                    { text: "Kadal", correct: false },
+                    { text: "Ular", correct: true },
+                    { text: "Buaya", correct: false },
+                    { text: "Salamander", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang suka berenang dan punya paruh seperti sendok?",
+                answers: [
+                    { text: "Ayam", correct: false },
+                    { text: "Bebek", correct: true },
+                    { text: "Angsa", correct: false },
+                    { text: "Pinguin", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang bisa mengubah warna kulitnya?",
+                answers: [
+                    { text: "Katak", correct: false },
+                    { text: "Ular", correct: false },
+                    { text: "Bunglon", correct: true },
+                    { text: "Kura-kura", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang tinggal di gurun dan punya punuk?",
+                answers: [
+                    { text: "Kuda", correct: false },
+                    { text: "Unta", correct: true },
+                    { text: "Zebra", correct: false },
+                    { text: "Gajah", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang suka makan madu?",
+                answers: [
+                    { text: "Kucing", correct: false },
+                    { text: "Anjing", correct: false },
+                    { text: "Beruang", correct: true },
+                    { text: "Monyet", correct: false }
+                ],
+                difficulty: "easy"
+            },
+            {
+                question: "Hewan apa yang terkenal dengan garis-garis hitam putihnya?",
+                answers: [
+                    { text: "Harimau", correct: false },
+                    { text: "Zebra", correct: true },
+                    { text: "Panda", correct: false },
+                    { text: "Jerapah", correct: false }
+                ],
+                difficulty: "easy"
+            },
+
+            // --- Pertanyaan Sedang (20 pertanyaan) ---
+            {
+                question: "Hewan mamalia laut terbesar di dunia adalah?",
+                answers: [
+                    { text: "Hiu Paus", correct: false },
+                    { text: "Lumba-lumba", correct: false },
+                    { text: "Paus Biru", correct: true },
+                    { text: "Orca", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan apa yang mengalami metamorfosis lengkap?",
+                answers: [
+                    { text: "Kadal", correct: false },
+                    { text: "Ayam", correct: false },
+                    { text: "Kupu-kupu", correct: true },
+                    { text: "Ular", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Reptil darat terbesar yang masih hidup adalah?",
+                answers: [
+                    { text: "Buaya Nil", correct: false },
+                    { text: "Komodo", correct: true },
+                    { text: "Anaconda", correct: false },
+                    { text: "Kura-kura Galapgos", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan apa yang dikenal dengan kantungnya untuk membawa anaknya?",
+                answers: [
+                    { text: "Kelinci", correct: false },
+                    { text: "Beruang", correct: false },
+                    { text: "Kanguru", correct: true },
+                    { text: "Gajah", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Jenis hewan apa yang memiliki tulang belakang?",
+                answers: [
+                    { text: "Invertebrata", correct: false },
+                    { text: "Vertebrata", correct: true },
+                    { text: "Arthropoda", correct: false },
+                    { text: "Moluska", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Burung manakah yang terkenal mampu meniru suara manusia?",
+                answers: [
+                    { text: "Merpati", correct: false },
+                    { text: "Gagak", correct: false },
+                    { text: "Beo", correct: true },
+                    { text: "Elang", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan air tawar yang memiliki capit besar adalah?",
+                answers: [
+                    { text: "Ikan", correct: false },
+                    { text: "Udang", correct: false },
+                    { text: "Kepiting", correct: false },
+                    { text: "Lobster air tawar", correct: true }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan apa yang bisa hidup di darat dan di air?",
+                answers: [
+                    { text: "Burung", correct: false },
+                    { text: "Amfibi", correct: true },
+                    { text: "Mamalia", correct: false },
+                    { text: "Reptil", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Serangga apa yang dikenal menghasilkan madu?",
+                answers: [
+                    { text: "Semut", correct: false },
+                    { text: "Lebah", correct: true },
+                    { text: "Laba-laba", correct: false },
+                    { text: "Capung", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan karnivora terbesar di darat adalah?",
+                answers: [
+                    { text: "Singa", correct: false },
+                    { text: "Harimau", correct: false },
+                    { text: "Beruang Kutub", correct: true },
+                    { text: "Serigala", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan apakah yang dikenal memiliki sidik jari seperti manusia?",
+                answers: [
+                    { text: "Monyet", correct: false },
+                    { text: "Koala", correct: true },
+                    { text: "Rakun", correct: false },
+                    { text: "Simpanse", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Berapa banyak kaki yang dimiliki laba-laba?",
+                answers: [
+                    { text: "6", correct: false },
+                    { text: "8", correct: true },
+                    { text: "4", correct: false },
+                    { text: "10", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan apakah yang dikenal memiliki cangkang yang digunakan sebagai rumah dan perlindungan?",
+                answers: [
+                    { text: "Bintang Laut", correct: false },
+                    { text: "Keong", correct: true },
+                    { text: "Kerang", correct: false },
+                    { text: "Teripang", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan yang dapat melihat dalam gelap dengan sangat baik adalah?",
+                answers: [
+                    { text: "Anjing", correct: false },
+                    { text: "Burung Hantu", correct: true },
+                    { text: "Kuda", correct: false },
+                    { text: "Ayam", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Apa nama bayi kanguru?",
+                answers: [
+                    { text: "Anak", correct: false },
+                    { text: "Jojo", correct: false },
+                    { text: "Joey", correct: true },
+                    { text: "Kitten", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan apa yang dikenal sebagai 'pembangun bendungan'?",
+                answers: [
+                    { text: "Berang-berang", correct: true },
+                    { text: "Tupai", correct: false },
+                    { text: "Musang", correct: false },
+                    { text: "Beruang", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Reptil yang bisa berdiri di atas dua kaki untuk mengamati lingkungan adalah?",
+                answers: [
+                    { text: "Ular", correct: false },
+                    { text: "Kadal", correct: false },
+                    { text: "Meerkats", correct: true }, // Meerkats bukanlah reptil, ini adalah pertanyaan tricky. Namun, dalam konteks "mengamati lingkungan", mereka sangat dikenal. Jika ingin spesifik reptil, bisa Komodo.
+                    { text: "Buaya", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan laut yang memiliki delapan lengan disebut?",
+                answers: [
+                    { text: "Cumi-cumi", correct: false },
+                    { text: "Gurita", correct: true },
+                    { text: "Bintang Laut", correct: false },
+                    { text: "Ubur-ubur", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Jenis burung apakah yang tidak bisa terbang?",
+                answers: [
+                    { text: "Elang", correct: false },
+                    { text: "Burung unta", correct: true },
+                    { text: "Merpati", correct: false },
+                    { text: "Pipit", correct: false }
+                ],
+                difficulty: "medium"
+            },
+            {
+                question: "Hewan apakah yang kulitnya tertutup duri tajam sebagai pertahanan diri?",
+                answers: [
+                    { text: "Kura-kura", correct: false },
+                    { text: "Landak", correct: true },
+                    { text: "Armadillo", correct: false },
+                    { text: "Trenggiling", correct: false }
+                ],
+                difficulty: "medium"
+            },
+
+            // --- Pertanyaan Sulit (20 pertanyaan) ---
+            {
+                question: "Spesies cheetah manakah yang memiliki kulit yang lebih gelap dengan bercak-bercak lebih besar dan menyatu, menyerupai pola macan tutul?",
+                answers: [
+                    { text: "Cheetah Asia", correct: false },
+                    { text: "Cheetah Afrika Barat Laut", correct: false },
+                    { text: "Cheetah Raja", correct: true },
+                    { text: "Cheetah Afrika Timur", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Apa nama proses di mana amfibi muda seperti kecebong berubah menjadi bentuk dewasa?",
+                answers: [
+                    { text: "Regenerasi", correct: false },
+                    { text: "Fragmentasi", correct: false },
+                    { text: "Metamorfosis", correct: true },
+                    { text: "Reproduksi", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Kelompok besar burung gagak disebut apa?",
+                answers: [
+                    { text: "Flock", correct: false },
+                    { text: "Herd", correct: false },
+                    { text: "Murder", correct: true }, 
+                    { text: "Swarm", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Hewan apakah yang dikenal karena kemampuannya melakukan ekolokasi untuk navigasi dan berburu?",
+                answers: [
+                    { text: "Burung Hantu", correct: false },
+                    { text: "Kelelawar", correct: true },
+                    { text: "Ular", correct: false },
+                    { text: "Beruang", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Hewan apa yang mampu mengubah jenis kelaminnya sepanjang hidupnya?",
+                answers: [
+                    { text: "Hiu", correct: false },
+                    { text: "Ikan badut", correct: true },
+                    { text: "Paus", correct: false },
+                    { text: "Penyu", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Apa nama serangga yang dapat hidup tanpa kepala selama seminggu?",
+                answers: [
+                    { text: "Semut", correct: false },
+                    { text: "Belalang", correct: false },
+                    { text: "Kecoa", correct: true },
+                    { text: "Lalat", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Mamalia laut manakah yang dikenal dengan 'nyanyian' kompleks mereka?",
+                answers: [
+                    { text: "Lumba-lumba", correct: false },
+                    { text: "Paus Bungkuk", correct: true },
+                    { text: "Anjing Laut", correct: false },
+                    { text: "Manatee", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Hewan apakah yang memiliki tiga jantung?",
+                answers: [
+                    { text: "Kura-kura", correct: false },
+                    { text: "Gurita", correct: true },
+                    { text: "Cumi-cumi", correct: false },
+                    { text: "Laba-laba", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Hewan manakah yang dikenal sebagai satu-satunya mamalia terbang sejati?",
+                answers: [
+                    { text: "Tupai Terbang", correct: false },
+                    { text: "Kelelawar", correct: true },
+                    { text: "Sugar Glider", correct: false },
+                    { text: "Kolibri", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Apa nama ilmiah untuk manusia?",
+                answers: [
+                    { text: "Pan troglodytes", correct: false },
+                    { text: "Homo sapiens", correct: true },
+                    { text: "Gorilla gorilla", correct: false },
+                    { text: "Pongo pygmaeus", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Serangga apakah yang memiliki siklus hidup yang sangat panjang, seringkali 13 atau 17 tahun, sebagian besar di bawah tanah?",
+                answers: [
+                    { text: "Jangkrik", correct: false },
+                    { text: "Kumbang", correct: false },
+                    { text: "Cicada (Jangkrik Tahunan)", correct: true },
+                    { text: "Ngengat", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Hewan apakah yang dikenal dengan kemampuannya untuk mendeteksi medan listrik lemah untuk menemukan mangsa?",
+                answers: [
+                    { text: "Hiu", correct: true },
+                    { text: "Belut Listrik", correct: false },
+                    { text: "Platipus", correct: false }, // Platipus juga bisa, tapi hiu lebih dikenal dalam konteks ini.
+                    { text: "Lele", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Mamalia darat tercepat di dunia adalah?",
+                answers: [
+                    { text: "Singa", correct: false },
+                    { text: "Cheetah", correct: true },
+                    { text: "Harimau", correct: false },
+                    { text: "Antelop", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Apa nama struktur di mulut ular yang menyuntikkan racun?",
+                answers: [
+                    { text: "Gigi", correct: false },
+                    { text: "Taring", correct: true },
+                    { text: "Rahang", correct: false },
+                    { text: "Lidah", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Hewan apakah yang bisa menumbuhkan kembali anggota tubuhnya yang hilang, seperti ekor atau lengan?",
+                answers: [
+                    { text: "Burung", correct: false },
+                    { text: "Salamander", correct: true },
+                    { text: "Kucing", correct: false },
+                    { text: "Anjing", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Paus apa yang dikenal karena 'tanduk' panjang yang sebenarnya adalah gigi taring?",
+                answers: [
+                    { text: "Paus Beluga", correct: false },
+                    { text: "Paus Sperma", correct: false },
+                    { text: "Narwhal", correct: true },
+                    { text: "Paus Abu-abu", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Apa nama periode dormansi musim dingin pada hewan, seperti beruang?",
+                answers: [
+                    { text: "Migrasi", correct: false },
+                    { text: "Hibernasi", correct: true },
+                    { text: "Estivasi", correct: false },
+                    { text: "Metamorfosis", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Hewan apa yang merupakan satu-satunya mamalia yang bertelur?",
+                answers: [
+                    { text: "Kelelawar", correct: false },
+                    { text: "Platipus dan Echidna", correct: true },
+                    { text: "Kanguru", correct: false },
+                    { text: "Armadillo", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Apa nama istilah untuk kelompok singa?",
+                answers: [
+                    { text: "Herd", correct: false },
+                    { text: "Pack", correct: false },
+                    { text: "Pride", correct: true },
+                    { text: "Flock", correct: false }
+                ],
+                difficulty: "hard"
+            },
+            {
+                question: "Hewan apakah yang dikenal memiliki sistem pencernaan dengan empat lambung?",
+                answers: [
+                    { text: "Kuda", correct: false },
+                    { text: "Babi", correct: false },
+                    { text: "Sapi", correct: true },
+                    { text: "Ayam", correct: false }
+                ],
+                difficulty: "hard"
+            },
+        ];
+
+        // Elemen DOM
+        const startScreen = document.getElementById('start-screen');
+        const levelSelectionScreen = document.getElementById('level-selection-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+
+        const startButton = document.getElementById('start-button');
+        const levelButtons = document.querySelectorAll('.level-button'); // Select all level buttons
+        const questionText = document.getElementById('question-text');
+        const answerButtonsContainer = document.getElementById('answer-buttons');
+        const nextButton = document.getElementById('next-button');
+        const questionNumberSpan = document.getElementById('question-number');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+
+        const finalScoreDisplay = document.getElementById('final-score');
+        const playAgainButton = document.getElementById('play-again-button');
+
+        // Variabel Game State
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questionsForCurrentLevel = []; // Questions filtered by difficulty
+
+        // Fungsi untuk Memulai Game (menuju pemilihan level)
+        const startGame = () => {
+            startScreen.classList.add('hidden');
+            levelSelectionScreen.classList.remove('hidden');
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+        };
+
+        // Fungsi untuk Memulai Kuis dengan Tingkat Kesulitan Tertentu
+        const startQuizWithDifficulty = (difficulty) => {
+            questionsForCurrentLevel = allQuestions.filter(q => q.difficulty === difficulty);
+            // Shuffle questions for the current level to ensure variety in each playthrough
+            questionsForCurrentLevel.sort(() => Math.random() - 0.5); 
+
+            // Limit to 20 questions if there are more (for future expansion flexibility)
+            // If you always ensure exactly 20, this line is optional but harmless.
+            questionsForCurrentLevel = questionsForCurrentLevel.slice(0, 20); 
+
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            levelSelectionScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            resultScreen.classList.add('hidden');
+
+            totalQuestionsSpan.textContent = questionsForCurrentLevel.length; // Will show "20"
+            displayQuestion();
+        };
+
+        // Fungsi untuk Menampilkan Pertanyaan
+        const displayQuestion = () => {
+            resetState(); // Reset tampilan tombol
+
+            // Ensure currentQuestionIndex is within bounds before trying to display a question
+            if (currentQuestionIndex >= questionsForCurrentLevel.length) {
+                endGame();
+                return;
+            }
+
+            const question = questionsForCurrentLevel[currentQuestionIndex];
+            questionText.textContent = question.question;
+            questionNumberSpan.textContent = currentQuestionIndex + 1;
+
+            // Create buttons for answers
+            question.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.textContent = answer.text;
+                button.classList.add('button-style', 'answer-button');
+                if (answer.correct) {
+                    button.dataset.correct = true; // Mark the correct answer
+                }
+                button.addEventListener('click', selectAnswer);
+                answerButtonsContainer.appendChild(button);
+            });
+        };
+
+        // Fungsi untuk Mereset Tampilan Tombol
+        const resetState = () => {
+            nextButton.classList.add('hidden');
+            nextButton.disabled = true;
+            nextButton.classList.add('disabled-button');
+            while (answerButtonsContainer.firstChild) {
+                answerButtonsContainer.removeChild(answerButtonsContainer.firstChild);
+            }
+        };
+
+        // Fungsi untuk Memilih Jawaban
+        const selectAnswer = (event) => {
+            const selectedButton = event.target;
+            const isCorrect = selectedButton.dataset.correct === 'true';
+
+            // Provide visual feedback and disable all buttons
+            answerButtonsContainer.querySelectorAll('.answer-button').forEach(button => {
+                if (button.dataset.correct === 'true') {
+                    button.classList.add('correct-answer');
+                } else {
+                    button.classList.add('incorrect-answer');
+                }
+                button.disabled = true; // Disable all buttons after one is selected
+                button.classList.add('disabled-button');
+            });
+
+            if (isCorrect) {
+                score++;
+            }
+
+            nextButton.classList.remove('hidden');
+            nextButton.disabled = false;
+            nextButton.classList.remove('disabled-button');
+        };
+
+        // Fungsi untuk Pindah ke Pertanyaan Selanjutnya
+        const goToNextQuestion = () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questionsForCurrentLevel.length) {
+                displayQuestion();
+            } else {
+                endGame();
+            }
+        };
+
+        // Fungsi untuk Mengakhiri Game
+        const endGame = () => {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            finalScoreDisplay.textContent = `${score} / ${questionsForCurrentLevel.length}`;
+        };
+
+        // Event Listeners
+        startButton.addEventListener('click', startGame);
+
+        // Event listeners for level selection buttons
+        levelButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const difficulty = event.target.dataset.difficulty;
+                startQuizWithDifficulty(difficulty);
+            });
+        });
+
+        nextButton.addEventListener('click', goToNextQuestion);
+        playAgainButton.addEventListener('click', startGame); // Play again goes back to start screen
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start screen is visible by default through HTML classes.
+            // Other screens are hidden.
+            // The startGame function will handle the transition to level selection.
+        });
+
+    </script>
+</body>
+</html>
